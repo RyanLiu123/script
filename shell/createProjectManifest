@@ -1,0 +1,134 @@
+#!/bin/bash
+#
+# file create by liunianliang for create project manifest
+# 
+# 2015.08.27
+#
+
+ftp_project_name=$1
+special_git_dir="
+abi \
+external
+vendor/dolby \
+packages/apps/OMA-DM \
+packages/providers/ApplicationsProvider \
+md32 \
+device \
+developers \
+frameworks/compile 
+frameworks/minikin \
+frameworks/opt \
+frameworks/wilhelm \
+frameworks/mff \
+hardware \
+prebuilts \
+platform_testing \
+system \
+tools \
+vendor/arm \
+vendor/huaqin \
+vendor/codeaurora \
+vendor/nxp \
+vendor/qcom \
+vendor/mediatek"
+
+auto_create_dir="
+huaqin \
+custom \
+patch_record \
+modem \
+vendor/google \
+vendor/huaqin/resource"
+
+gen_file="
+build.log \
+build.sh \
+Makefile
+"
+
+function createSpecialGitTempFile()
+{
+    for i in $special_git_dir;do
+	if [ -d $i ];then
+	    touch $i/.readme.txt
+	fi
+    done
+
+    for j in $auto_create_dir;do
+	if [ ! -d $j ];then
+	    mkdir -p $j
+	fi
+	rm -rf $j/.readme.txt
+	touch $j/.readme.txt
+    done
+}
+
+function mvFirstMakefile()
+{
+	for i in $gen_file; do
+    if [ -e "$local_path/$i" ];then
+	mv $local_path/$i $HOME/${i}_temp
+    fi
+	done
+}
+
+function restoreMakefile()
+{
+	for i in $gen_file; do
+    if [ -e "$HOME/${i}_temp" ];then
+	mv $HOME/${i}_temp $local_path/$i
+    fi 
+	done   
+}
+
+function out_put() {
+    echo $1 >> $temp_file
+}
+
+function getProjectList()
+{
+    A=`find $1 -maxdepth 1 -name "*" -type f`
+    echo "file = $A"
+    if [ -z "$A" ];then 
+	echo -e "$1 has no alone file."
+    for i in `ls $1`
+    do
+	echo "currut path is $1/$i"
+	getProjectList $1/$i
+    done
+    else
+	path=$(echo $1 | sed -e s#$local_path/##g)
+	if [[ $path =~ "kernel" ]];then
+	    echo "  <project path=\"$path\" name=\"$ftp_project_name/$path\" />" >> $temp_file
+	elif [ "`echo $path | grep ^device$`" != "" ];then
+	    echo "  <project path=\"$path\" name=\"$ftp_project_name/$path\" />" >> $temp_file
+	else
+	    echo "  <project path=\"$path\" name=\"$ftp_project_name/platform/$path\" />" >> $temp_file
+	fi
+    fi
+}
+
+local_path=`pwd`
+temp_file="$HOME/$ftp_project_name.xml"
+if [ -e "$temp_file" ];then
+    rm -rf $temp_file
+fi
+touch $temp_file
+
+rm -rf "$local_path/$ftp_project_name.xml"
+
+out_put "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+out_put "<manifest>"
+echo " <remote fetch=\".\" name=\"origin\" review=\"gerrit.huaqin.com:8081\"/>" >> $temp_file
+echo " <default revision=\"master\"" >> $temp_file
+echo "          remote=\"origin\"" >> $temp_file
+echo "          sync-j=\"4\" />" >> $temp_file
+echo " " >> $temp_file
+mvFirstMakefile
+createSpecialGitTempFile
+getProjectList $local_path
+restoreMakefile
+out_put "</manifest>"
+
+mv $temp_file $local_path/$ftp_project_name.xml
+rm -rf $temp_file
