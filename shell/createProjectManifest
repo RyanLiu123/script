@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# file create by liunianliang for create project manifest
+# file create by xxx for create project manifest
 # 
 # 2015.08.27
 #
@@ -26,19 +26,19 @@ platform_testing \
 system \
 tools \
 vendor/arm \
-vendor/huaqin \
+vendor/xxxxx \
 vendor/codeaurora \
 vendor/nxp \
 vendor/qcom \
 vendor/mediatek"
 
 auto_create_dir="
-huaqin \
+xxxx \
 custom \
 patch_record \
 modem \
 vendor/google \
-vendor/huaqin/resource"
+vendor/xxxx/resource"
 
 gen_file="
 build.log \
@@ -119,7 +119,7 @@ rm -rf "$local_path/$ftp_project_name.xml"
 
 out_put "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 out_put "<manifest>"
-echo " <remote fetch=\".\" name=\"origin\" review=\"gerrit.huaqin.com:8081\"/>" >> $temp_file
+echo " <remote fetch=\".\" name=\"origin\" review=\"gerrit.xxxx.com:8081\"/>" >> $temp_file
 echo " <default revision=\"master\"" >> $temp_file
 echo "          remote=\"origin\"" >> $temp_file
 echo "          sync-j=\"4\" />" >> $temp_file
